@@ -100,6 +100,25 @@ def main():
     # Path to metadata file
     metadata_file = "config/metadata.json"
     
+    # Print working directory and check for file existence
+    print(f"Current working directory: {os.getcwd()}", file=sys.stderr)
+    print(f"Files in current directory: {os.listdir('.')}", file=sys.stderr)
+    print(f"Files in config directory (if exists): {os.listdir('config') if os.path.exists('config') else 'config dir not found'}", file=sys.stderr)
+    
+    # Try to find metadata.json in various locations
+    possible_paths = [
+        "config/metadata.json",
+        "metadata.json",
+        "../config/metadata.json",
+        "../metadata.json"
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            metadata_file = path
+            print(f"Found metadata file at: {metadata_file}", file=sys.stderr)
+            break
+    
     # Ensure the directory exists
     os.makedirs(os.path.dirname(metadata_file), exist_ok=True)
     
