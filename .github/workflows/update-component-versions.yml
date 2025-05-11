@@ -45,7 +45,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Before update - metadata content:"
+          cat config/metadata.json
+          
           python update_component_versions.py
+          
+          echo "After update - metadata content:"
+          cat config/metadata.json
+          
+          echo "Diff:"
+          git diff config/metadata.json
 
       - name: Check for changes
         id: git-check
