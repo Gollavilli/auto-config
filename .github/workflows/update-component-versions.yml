@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for proper branching
 
       - name: Generate branch name
         id: branch-name
@@ -30,47 +32,65 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          pip install PyGithub requests PyYAML
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Create new branch
-        uses: peterjgrainger/action-create-branch@v2.2.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          branch: ${{ steps.branch-name.outputs.BRANCH_NAME }}
-          sha: '${{ github.sha }}'
+      - name: Create and checkout new branch
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b ${{ steps.branch-name.outputs.BRANCH_NAME }}
 
-      - name: Checkout new branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.branch-name.outputs.BRANCH_NAME }}
+      - name: Ensure config directory exists
+        run: |
+          mkdir -p config
+
+      - name: Copy metadata file if it doesn't exist
+        run: |
+          if [ ! -f config/metadata.json ]; then
+            cp metadata.json config/metadata.json || echo "No metadata.json in root directory"
+          fi
 
       - name: Update component versions
         id: update-versions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Print environment for debugging
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+          
+          if [ -f config/metadata.json ]; then
+            echo "Found metadata.json in config directory"
+            cat config/metadata.json
+          else
+            echo "WARNING: Metadata file not found in config directory"
+          fi
+          
+          # Run the update script
           python update_component_versions.py
 
       - name: Check for changes
         id: git-check
         run: |
+          git status
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "CHANGES=true" >> $GITHUB_OUTPUT
+            echo "Changes detected"
           else
             echo "CHANGES=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
           fi
 
       - name: Commit and push changes
         if: steps.git-check.outputs.CHANGES == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore: update component versions $(date +'%Y-%m-%d')"
-          branch: ${{ steps.branch-name.outputs.BRANCH_NAME }}
-          file_pattern: 'config/metadata.json'
-          commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: '--force'
+        run: |
+          git add config/metadata.json
+          git commit -m "chore: update component versions $(date +'%Y-%m-%d')"
+          git push --set-upstream origin ${{ steps.branch-name.outputs.BRANCH_NAME }} --force
 
       - name: Create Pull Request
         if: steps.git-check.outputs.CHANGES == 'true'
