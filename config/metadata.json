@@ -1,7 +1,7 @@
 {
   "bu": "artemis-na",
   "service_name": "trusso-eks-v127",
-  "enable_deployment_role_in_access_entry": False,
+  "enable_deployment_role_in_access_entry": false,
   "tags": {
     "ServiceOwner": "trusso",
     "version": "1.0",
@@ -10,47 +10,47 @@
     "service_name": "trusso-eks-v127"
   },
   "aws_ingress_controller": {
-    "enable": True,
+    "enable": true,
     "version": "1.12.0"
   },
   "karpenter": {
-    "enable": True,
+    "enable": true,
     "version": "0.37.3"
   },
   "datadog": {
-    "enable": True,
+    "enable": true,
     "agent_version": "7.64.3",
-    "apm_enable": False,
+    "apm_enable": false,
     "secret": "all/eks/artemis/datadog"
   },
   "efs_driver": {
-    "enable": True,
+    "enable": true,
     "dynamic_provisioning": {
-      "enable": False
+      "enable": false
     }
   },
   "metrics_server": {
-    "enable": True
+    "enable": true
   },
   "nvidia_plugin": {
-    "enable": False
+    "enable": false
   },
   "fargate": {
-    "enable": True
+    "enable": true
   },
   "aws_secrets": {
-    "enable": True
+    "enable": true
   },
-  "node_security_group": False,
+  "node_security_group": false,
   "wiz": {
     "connector": {
-      "enable": True
+      "enable": true
     },
     "sensor": {
-      "enable": True
+      "enable": true
     },
     "admission_controller": {
-      "enable": True
+      "enable": true
     },
     "secret": "all/eks/artemis/wiz"
   }
